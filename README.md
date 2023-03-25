@@ -4,7 +4,7 @@ Designed to run in your ECS cluster, it allows you to automatically discover the
 
 For further details, please check my medium publication:
 
-To build the docker image, use the specific dockerFile and the source code available under the python_ecstasks_exporter folder.
+To build the docker image, use the specific dockerFile and the source code available under the ecs_prometheus_operator folder.
 
 Any MR is appreciated
 

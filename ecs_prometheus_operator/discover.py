@@ -50,7 +50,7 @@ class ScrapExporters:
         logger.info(f'Found {len(response)} runnings tasks')
         return response
 
-    def get_tasks_detail(self, tasks:list):
+    def get_tasks_detail(self, tasks:list) -> list:
         logger.info('Extracting tasks details')
         response = self.ecs_client.describe_tasks(
             cluster=self.cluster_name,
@@ -73,7 +73,7 @@ class ScrapExporters:
         
         return self.task_definition_port_reference[task_definition_arn].get(container_name)
 
-    def analyse_containers(self, tasks_details:list):
+    def analyse_containers(self, tasks_details:list) -> None:
         logger.info('Analyzing tasks to identify the exporter containers')
         for task in tasks_details:
             task_name = task.get('taskDefinitionArn').split('/')[-1].split(':')[0]
@@ -98,7 +98,7 @@ class ScrapExporters:
 
     def discover(self):
         running_tasks = self.get_running_tasks()
-        tasks_details= self.get_tasks_detail(running_tasks)
+        tasks_details = self.get_tasks_detail(running_tasks)
         self.analyse_containers(tasks_details)
         logger.info('Current env looks like this:')
         logger.info(self.current_exporter_dict)
@@ -172,11 +172,11 @@ class ScrapExporters:
                 logger.info('Current exporter are already declared')
                 self.reset_current_exporter_dict()
             else:
-                exporterx_to_crud = self.identify_differences_between_dicts(self.current_exporter_dict, self.reference_exporter_dict)
+                exporters_to_crud = self.identify_differences_between_dicts(self.current_exporter_dict, self.reference_exporter_dict)
                 # FIXME: We need to catch the case when the reference exp dict contains more than the current env - this will allow purging
                 # GOTO: function identify_differences_between_dicts to fix
-                if len(exporterx_to_crud) > 0:
-                    if self.create_events(exporterx_to_crud):
+                if len(exporters_to_crud) > 0:
+                    if self.create_events(exporters_to_crud):
                         logger.info('Saving current exporter state')
                         self.reference_exporter_dict = copy(self.current_exporter_dict)
                         self.reset_current_exporter_dict()
@@ -186,7 +186,7 @@ class ScrapExporters:
             logger.info('Did not found any exporter')
 
 if __name__ == "__main__":
-    scraper = ScrapExporters('default')
+    scraper = ScrapExporters(event_bus_name='default')
     signal.signal(signal.SIGTERM, scraper.terminate())
     while True:
         scraper.main()
